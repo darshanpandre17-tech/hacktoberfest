@@ -19,15 +19,26 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const apiKey = process.env.GEMINI_API_KEY;
 
-// Initialize Google Gen AI client with telemetry user-agent header
-const ai = new GoogleGenAI({
-  apiKey: apiKey || '',
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    },
-  },
-});
+let ai: GoogleGenAI | undefined;
+
+function getAiClient(): GoogleGenAI {
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not set in the server environment.');
+  }
+
+  if (!ai) {
+    ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        },
+      },
+    });
+  }
+
+  return ai;
+}
 
 const DEFAULT_GEMMA_MODEL = 'gemma-4-26b-a4b-it';
 const VERIFIED_GEMMA_MODELS = [
@@ -139,7 +150,7 @@ app.get('/api/health', async (_req: Request, res: Response) => {
   }
 
   try {
-    const modelsPager = await ai.models.list();
+    const modelsPager = await getAiClient().models.list();
     const gemmaModels: string[] = [];
     for await (const m of modelsPager) {
       if (m.name && m.name.toLowerCase().includes('gemma')) {
@@ -182,7 +193,7 @@ app.post('/api/test-connection', async (req: Request, res: Response) => {
 
   try {
     const prompt = 'Introduce yourself as the Haunted Study Buddy in exactly one spooky and welcoming sentence!';
-    const response = await ai.models.generateContent({
+    const response = await getAiClient().models.generateContent({
       model: requestedModel,
       contents: prompt,
       config: {
@@ -325,7 +336,7 @@ app.post('/api/study/chat', async (req: Request, res: Response) => {
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      response = await ai.models.generateContent({
+      response = await getAiClient().models.generateContent({
         model: selectedModel,
         contents: prepared,
         config: {
