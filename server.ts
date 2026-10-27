@@ -10,6 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+export default app;
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
 // Support large image payloads (e.g. high-res homework photos up to 50MB)
@@ -425,4 +426,6 @@ async function startServer() {
   });
 }
 
-startServer();
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  void startServer();
+}
