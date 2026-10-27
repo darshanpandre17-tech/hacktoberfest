@@ -1,0 +1,6 @@
+{
+  "name": "Haunted Study Buddy",
+  "description": "A spooky Halloween-themed educational companion powered by Gemma 4 with Direct Answer and Hint-Based Mystery learning modes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
